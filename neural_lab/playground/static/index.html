@@ -169,6 +169,31 @@ input[type=range]{accent-color:var(--ember);width:100%}
 .ubar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:18px 48px 0}
 #uAxes,#uLoaded{font-size:13px;color:var(--sand);padding:12px 48px 0;max-width:110ch;margin:0}
 
+
+/* proof room */
+.proof{padding:28px 48px 0;display:grid;gap:72px}
+.proof h3{font-family:var(--serif);font-weight:400;font-size:44px;line-height:1;margin:0 0 10px}
+.proof .lede{color:var(--sand);max-width:70ch;margin:0 0 22px}
+#pTable{border-collapse:collapse;width:100%;max-width:1100px;font-size:14px}
+#pTable th{text-align:left;color:var(--sand);font-weight:500;padding:6px 14px 6px 0;border-bottom:1px solid var(--rule)}
+#pTable td{padding:7px 14px 7px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+#pTable .r{text-align:right} #pTable tr.tot td{color:var(--ember);font-weight:600;border-bottom:0;padding-top:12px}
+#pFacts{color:var(--sand);margin-top:14px} #pFacts b{color:var(--ivory);font-weight:500}
+.twin{display:grid;grid-template-columns:repeat(3,minmax(0,300px));gap:28px}
+.twin figure{margin:0}.twin canvas{width:100%;aspect-ratio:1;image-rendering:pixelated;display:block;background:#000}
+.twin figcaption{font-family:var(--serif);font-size:24px;margin-bottom:8px}
+.twin figcaption span{display:block;font-family:var(--sans);font-size:13px;color:var(--sand)}
+#pAuc{width:100%;max-width:820px;height:auto;display:block}
+#pAuc .lbl{fill:var(--ivory);font-size:14px;font-family:var(--sans)} #pAuc .ax{fill:var(--sand);font-size:12px;font-family:var(--sans)}
+.kgrid{display:grid;grid-template-columns:repeat(16,1fr);gap:6px;max-width:760px}
+.kgrid canvas{width:100%;aspect-ratio:1;image-rendering:pixelated}
+.kpair{display:grid;gap:22px}.kpair p{margin:0 0 8px;color:var(--sand);font-size:13px}
+.trainrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:40px;align-items:start}
+.trainrow pre{background:var(--ink);border:1px solid var(--rule);padding:16px;font-size:13px;overflow:auto;color:var(--ivory)}
+.trainrow img{width:100%;background:#fff;border-radius:2px}
+#pTrain{color:var(--ivory);padding-left:18px;margin:0}#pTrain li{margin-bottom:8px}
+@media (max-width:1000px){.twin,.trainrow{grid-template-columns:1fr}.kgrid{grid-template-columns:repeat(8,1fr)}}
+
 /* demo */
 #demo{position:fixed;left:0;right:0;bottom:0;z-index:80;background:linear-gradient(transparent,#09090af2 30%);padding:60px 48px 28px}
 #demoTitle{font-family:var(--serif);font-size:44px;margin:0;line-height:1}
@@ -192,6 +217,7 @@ body.demo main.room{padding-bottom:240px}
     <a href="#defect" data-room="defect">Defect experiment</a>
     <a href="#architecture" data-room="architecture">Architecture</a>
     <a href="#universe" data-room="universe">Latent universe</a>
+    <a href="#proof" data-room="proof">Is it a neural network?</a>
     <a href="/classic.html">Classic interface</a>
     <button class="btn" id="demoBtn">Play 90-second demo</button>
   </nav>
@@ -301,6 +327,61 @@ body.demo main.room{padding-bottom:240px}
   <p class="honest" style="margin-top:28px">PCA is a linear projection of 32 dimensions down to 3 or 2: points that look close may differ in the dimensions that are not shown. The slow turn of the 3D view is a camera move only.</p>
 </main>
 
+<main class="room" id="room-proof" data-room="proof" hidden>
+  <section class="head">
+    <div>
+      <h2>Is it a neural network? <i>The evidence, not a claim.</i></h2>
+      <p id="pIntro">Yes: a convolutional autoencoder. Below, its layers are read straight from the published weight file, it is compared live with an untrained copy of itself, and its training record is shown. Every number comes from the files or from inference.</p>
+    </div>
+  </section>
+  <div class="proof">
+    <section>
+      <h3>Its anatomy, from the weight file</h3>
+      <p class="lede">Each row is a layer of the network. "Learned values" are the numbers training adjusted. A program with hand-written rules has none.</p>
+      <table id="pTable"></table>
+      <p id="pFacts"></p>
+    </section>
+    <section>
+      <h3>Trained vs untrained, live</h3>
+      <p class="lede">The same architecture twice: once with the learned values, once with random ones (never trained). Same weld in, two redraws out. Only training makes the redraw look like a weld. Draw in the Defect room or pick another tile, and both update.</p>
+      <div class="twin">
+        <figure><figcaption>Your weld<span>the input</span></figcaption><canvas id="pIn"></canvas></figure>
+        <figure><figcaption>Trained network<span id="pTs"></span></figcaption><canvas id="pT"></canvas></figure>
+        <figure><figcaption>Untrained twin<span id="pUs"></span></figcaption><canvas id="pU"></canvas></figure>
+      </div>
+    </section>
+    <section>
+      <h3>Does the learning matter? Measured on 3,019 test tiles</h3>
+      <p class="lede">How well each one separates defects from sound welds, on welds the network never trained on.</p>
+      <svg id="pAuc" viewBox="0 0 640 170"></svg>
+      <p class="lede" id="pAucNote" style="font-size:13px;margin-top:10px"></p>
+    </section>
+    <section>
+      <h3>What the first layer learned</h3>
+      <p class="lede">The first layer is 32 small 3×3 filters slid over the weld. Orange = positive weight, blue = negative. Trained filters show organised patterns; the untrained twin's are random. We do not claim what each filter means.</p>
+      <div class="kpair"><div><p>Trained (published weights)</p><div class="kgrid" id="pKt"></div></div>
+        <div><p>Untrained twin (random, seed 0)</p><div class="kgrid" id="pKu"></div></div></div>
+    </section>
+    <section>
+      <h3>How it was trained</h3>
+      <div class="trainrow">
+        <div>
+          <ul id="pTrain"></ul>
+          <pre>for x in batches_of_sound_welds:
+    loss = mse(model(x), x)   # 1 redraw, measure the error
+    optimizer.zero_grad()
+    loss.backward()           # 2 backpropagation: blame per weight
+    optimizer.step()          # 3 nudge all 718,369 values</pre>
+          <p class="lede" id="pSrc" style="font-size:13px"></p>
+        </div>
+        <figure style="margin:0"><img src="training_curves.png" alt="Training curves from the team notebook: error per epoch, training and validation, for the four setups compared" onerror="this.parentElement.hidden=true">
+          <figcaption class="lede" style="font-size:13px;margin-top:8px">Error per epoch while training, from the team notebook (SECTION 8b). The published model is setup D; the dashed line is the epoch that was kept.</figcaption></figure>
+      </div>
+    </section>
+  </div>
+  <p class="honest" style="margin-top:48px">Made by <code>python -m neural_lab.playground.proof</code> from the published weights and the test welds. No retraining: the untrained twin is a control, built with the same code and random starting values.</p>
+</main>
+
 <section id="demo" hidden aria-live="polite">
   <h3 id="demoTitle"></h3><p id="demoText"></p><div id="demoTrack"><div id="demoBar"></div></div>
   <button class="btn" id="demoStop">Stop demo</button>
@@ -316,17 +397,18 @@ body.demo main.room{padding-bottom:240px}
 <script src="arch.js"></script>
 <script src="defect.js"></script>
 <script src="universe.js"></script>
+<script src="proof.js"></script>
 <script src="demo.js"></script>
 <script>
 "use strict";
-const ROOMS = { defect: "room-defect", architecture: "room-arch", universe: "room-universe" };
+const ROOMS = { defect: "room-defect", architecture: "room-arch", universe: "room-universe", proof: "room-proof" };
 function go(room) {
   if (!ROOMS[room]) room = "defect";
   for (const [k, id] of Object.entries(ROOMS)) document.getElementById(id).hidden = k !== room;
   document.querySelectorAll("nav.rooms a[data-room]").forEach(a => a.dataset.room === room ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   document.body.dataset.room = room;
   if (location.hash !== "#" + room) history.replaceState(null, "", "#" + room);
-  if (room === "architecture") Arch.show(); else if (room === "universe") Universe.show(); else Defect.render();
+  if (room === "architecture") Arch.show(); else if (room === "universe") Universe.show(); else if (room === "proof") Proof.show(); else Defect.render();
   scrollTo({ top: 0 });
   if (document.body.classList.contains("demo")) {     // demo: bring the live part of the room into view
     const target = { defect: ".dlab", architecture: ".scene", universe: ".uwrap" }[room];
@@ -342,6 +424,7 @@ function go(room) {
     Arch.build(document.getElementById("room-arch"));
     Defect.build(document.getElementById("room-defect"));
     await Universe.build(document.getElementById("room-universe"));
+    await Proof.build(document.getElementById("room-proof"));
     const sel = document.getElementById("tilePick"); let grp = null, og;
     cfg.catalogue.forEach(t => { if (t.label !== grp) { grp = t.label; og = document.createElement("optgroup"); og.label = NL.CLASS_NAME[grp]; sel.appendChild(og); }
       const o = document.createElement("option"); o.value = t.id; o.textContent = `${NL.CLASS_NAME[t.label]} · ${t.pick} · score ${t.score.toFixed(5)}`; og.appendChild(o); });

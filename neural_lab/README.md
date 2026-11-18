@@ -20,23 +20,30 @@ python -m neural_lab                       # NEURAL / LAB: the main app (http://
 
 ### NEURAL / LAB — Exploring the Black Box
 
-The main app. The published model runs **in the browser** (ONNX Runtime Web), so it reacts live.
+`python -m neural_lab`, then http://127.0.0.1:7870. The published model runs **in the browser** (ONNX Runtime Web).
+Three rooms share one weld (pick a test tile or upload one):
 
-- **Defect experiment**: start from a test-weld tile or upload one, draw on a large canvas; reconstruction, error
-  heatmap (overlay on the weld), score, LOW / CHECK / HIGH and a before/after wipe update while you draw.
-  **Sensitivity experiment**: one synthetic pore / crack / band on 12 sound test welds, sweep its size or darkness,
-  plot the real scores (mean and range) against real defect scores of the test welds; CSV export.
-- **Neural explorer**: six latent numbers preselected by *measured* influence (all 32 in advanced mode, ranges =
-  1st-99th percentile of real test tiles), original vs edited code and redraw, the difference they make, real
-  block 1-3 feature maps (and how your drawing changed them), and a PCA map of the 3,019 test tiles where your
-  weld and your edited code move live.
+- **Defect experiment** (`#defect`): draw on a large canvas; live score, LOW / CHECK / HIGH, heatmap overlay,
+  before/after wipe, and an original → redraw → error sequence (crossfades between real images only). Below, the
+  sensitivity study: one synthetic pore / crack / band on 12 sound test welds, swept in size or darkness, against
+  real defect scores; CSV export.
+- **Architecture** (`#architecture`): the real ConvAE as nine stations; planes are real feature maps of encoder and
+  decoder, bars are real per-channel means; click a station for all its channels; drag the 32 latent bars and the
+  decoder answers. Lines show the order of operations, not weights.
+- **Latent universe** (`#universe`): the 3,019 test tiles by PCA of their codes (3D PC1–PC3 or 2D), true-class
+  colours, hover for the real tile and score, click to load it; your weld is projected live.
+- **Play 90-second demo**: a guided tour that drives the real model; captions about results are written from the
+  measured result. Esc or "Stop demo" ends it.
+- **Is it a neural network?** (`#proof`): the evidence. Every layer read from the published weight file (718,369
+  learned values), the trained network vs its untrained twin (same architecture, random weights) live on your weld
+  and as ROC AUC on the 3,019 test tiles against a no-network contrast baseline, the 32 learned first-layer filters,
+  and the training record. Built once by `python -m neural_lab.playground.proof` (writes `static/proof.json`,
+  `static/control.onnx`, `static/training_curves.png`: no dataset pixels).
+- `/classic.html`: the previous single-page interface, kept as a fallback.
 
-`playground/export.py` prepares it: exports the encoder (with its three block outputs) and decoder from the published
-weights and checks them against the deployed ONNX model, PyTorch and the forward hooks; measures neuron influence;
-computes the PCA. The page lists these checks at the bottom. A drawn mark is not a real defect: the page never
-claims the model will flag it.
-
-The Gradio explorer (`python -m neural_lab.app`) still works but is superseded by NEURAL / LAB.
+`playground/export.py` prepares the browser model: encoder (with its three block outputs) and decoder (with its three
+intermediate outputs) exported from the published weights and checked against the deployed ONNX model, PyTorch and
+forward hooks; it also measures neuron influence and computes the PCA. The page lists these checks.
 
 ## Files
 

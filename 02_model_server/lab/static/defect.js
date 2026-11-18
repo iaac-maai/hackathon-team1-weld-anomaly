@@ -84,7 +84,7 @@ const Defect = (() => {
       : `Unedited tile · ${(sc / NL.cfg.threshold).toFixed(2)}× the alarm threshold`;
     $("#dNeedle").style.bottom = pos(sc) + "%"; $("#dOrig").style.bottom = pos(base) + "%";
     spark();
-    if (!seqPlaying) { NL.paint($("#dSeqA"), s.orig, N); NL.paint($("#dSeqB"), s.now.rec, N); NL.paint($("#dSeqC"), s.now.err, N, "heat", NL.cfg.error_map_max); }
+    if (!seqPlaying) { NL.paint($("#dSeqA"), s.cur, N); NL.paint($("#dSeqB"), s.now.rec, N); NL.paint($("#dSeqC"), s.now.err, N, "heat", NL.cfg.error_map_max); }
     const w = s.weld;
     $("#dInfo").textContent = w.label === "uploaded" ? "Your uploaded image, preprocessed in Python exactly like training."
       : `Test weld ${w.weld}, tile ${w.source}. True class: ${NL.CLASS_NAME[w.label]}.`;

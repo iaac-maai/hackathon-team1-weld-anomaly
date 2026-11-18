@@ -78,6 +78,8 @@ with gr.Blocks(title="Weld AE · Neural Network Lab") as demo:
                 overview = gr.Plot(label="Input, reconstruction, error")
                 block_plots = [gr.Plot(label=plots.BLOCK_INFO[b]) for b in BLOCKS]
                 latent_plot = gr.Plot(label="Latent code")
+        # Uploading an image switches the source to "upload" (otherwise the upload would be ignored)
+        upload.upload(lambda img: "upload", upload, source)
         run_btn.click(explore, [source, label, which, rank, upload, k, order],
                       [summary, overview, *block_plots, latent_plot])
     with gr.Tab("Sound vs defect"):

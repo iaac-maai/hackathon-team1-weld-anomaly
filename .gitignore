@@ -52,3 +52,7 @@ flagged/
 !02_model_server/lab/models/*.onnx
 !02_model_server/lab/data/
 !02_model_server/lab/data/*
+
+# NEURAL / LAB proof room: the untrained twin (random weights, no data) is served with the page
+!neural_lab/playground/static/control.onnx
+!02_model_server/lab/static/control.onnx

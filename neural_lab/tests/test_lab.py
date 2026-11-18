@@ -147,8 +147,35 @@ def test_browser_model_equals_deployed_model_and_hooks(pretrained, tmp_path):
 
 def test_page_uses_only_served_model_outputs():
     static = Path(neural_lab.__file__).parent / "playground" / "static"
-    for f in ["index.html", "classic.html", "core.js", "arch.js", "defect.js", "universe.js", "demo.js"]:
+    for f in ["index.html", "classic.html", "core.js", "arch.js", "defect.js", "universe.js", "demo.js", "proof.js"]:
         src = (static / f).read_text(encoding="utf-8")
         assert "Math.random" not in src, f"{f}: nothing on the page may be invented"
     core = (static / "core.js").read_text(encoding="utf-8")
     assert "/models/encoder.onnx" in core and "/models/decoder.onnx" in core
+
+
+# ---- "Is it a neural network?" room: the evidence files -----------------------------------------------------
+PROOF = Path(neural_lab.__file__).parent / "playground" / "static" / "proof.json"
+
+
+@pytest.mark.skipif(not PROOF.exists(), reason="run python -m neural_lab.playground.proof first")
+def test_proof_matches_the_published_weights(pretrained):
+    model, _ = pretrained
+    p = json.loads(PROOF.read_text())
+    assert p["total_learned"] == sum(r["learned"] for r in p["layers"]) == EXPECTED_PARAMS
+    import hashlib
+    assert p["weights_sha256"] == hashlib.sha256(hf_file("anomaly_ae.pt").read_bytes()).hexdigest()
+    assert np.allclose(np.array(p["filters_trained"]), model.encoder[0].weight[:, 0].numpy(), atol=1e-4)
+    assert not np.allclose(np.array(p["filters_trained"]), np.array(p["filters_untrained"]), atol=1e-2)
+    assert round(p["control"]["auc_trained"], 3) == 0.999
+
+
+@pytest.mark.skipif(not PROOF.exists(), reason="run python -m neural_lab.playground.proof first")
+def test_untrained_twin_is_the_same_architecture_with_other_weights(pretrained):
+    model, _ = pretrained
+    twin = onnx_session(PROOF.parent / "control.onnx")
+    x = torch.rand(2, 1, 64, 64, generator=torch.Generator().manual_seed(5))
+    rec = np.concatenate([twin.run(None, {"image": x[i:i + 1].numpy()})[0] for i in range(2)])
+    assert rec.shape == (2, 1, 64, 64)
+    with torch.no_grad():
+        assert np.abs(rec - model(x).numpy()).max() > 1e-2       # different weights -> different redraw

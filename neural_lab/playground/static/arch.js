@@ -128,7 +128,7 @@ const Arch = (() => {
     $("#rlScore", root).textContent = b.score.toFixed(6);
     $("#rlLevel", root).textContent = NL.LEVEL_TEXT[L]; $("#rlLevel", root).dataset.level = L;
     $("#rlSteer", root).innerHTML = steered
-      ? `With your edited code, the redraw differs from your weld by <b class="num">${v.score.toFixed(6)}</b> (mean squared error). Changed: ${zMod.map((_, d) => d).filter(changed).map(d => "z" + d).join(", ")}.`
+      ? `With your edited code, the redraw differs from your weld by <b class="num">${v.score.toFixed(6)}</b> (mean squared error). Changed: ${[...Array(32).keys()].filter(changed).map(d => "z" + d).join(", ")}.`
       : `Drag any of the 32 bars in the middle to change the code the decoder receives.`;
   }
 
